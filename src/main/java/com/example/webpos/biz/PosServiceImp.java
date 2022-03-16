@@ -55,7 +55,19 @@ public class PosServiceImp implements PosService {
         Product product = posDB.getProduct(productId);
         if (product == null) return false;
 
-        this.getCart().addItem(new Item(product, amount));
+        //TODO: product maybe already exist in the list ; amount maybe negative --> maybe remove the item
+        Item item = this.getCart().getItemById(productId);
+        if (item == null) this.getCart().addItem(new Item(product, amount));
+        else {//product already exist
+            int newAmount = amount + item.getQuantity();
+            if (newAmount > 0) {
+                this.getCart().removeItem(item);
+                this.getCart().addItem(new Item(product, amount + item.getQuantity()));
+                return true;
+            }
+            else if(newAmount == 0) this.getCart().removeItem(item);
+            else return false;//newAmount < 0, failed
+        }
         return true;
     }
 
